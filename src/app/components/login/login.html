@@ -1,0 +1,39 @@
+<div class="flex justify-content-center align-items-center min-h-screen surface-ground px-4">
+    <p-card header="Acceso IoT" subheader="Bienvenido al sistema" [style]="{width: '100%', maxWidth: '400px'}" styleClass="shadow-4 border-round-xl">
+        
+        <ng-template pTemplate="header">
+            <div class="text-center pt-5 pb-2">
+                <i class="pi pi-user-circle text-6xl text-primary"></i>
+            </div>
+        </ng-template>
+
+        <div class="flex flex-column gap-4 mt-2">
+            <div class="field">
+                <span class="p-float-label w-full">
+                    <input id="username" type="text" pInputText [(ngModel)]="usuario" class="w-full p-inputtext-lg">
+                    <label for="username">Usuario</label>
+                </span>
+            </div>
+
+            <div class="field">
+                <span class="p-float-label w-full">
+                    <p-password [(ngModel)]="password" [toggleMask]="true" [feedback]="false" styleClass="w-full" inputStyleClass="w-full p-inputtext-lg"></p-password>
+                    <label>Contraseña</label>
+                </span>
+            </div>
+
+            <p-button label="Iniciar Sesión" icon="pi pi-sign-in" styleClass="w-full p-button-lg p-button-rounded" (onClick)="login()"></p-button>
+
+            <div *ngIf="error" class="flex align-items-center justify-content-center text-red-500 gap-2 fadein animation-duration-300">
+                <i class="pi pi-exclamation-circle"></i>
+                <small class="font-bold">{{error}}</small>
+            </div>
+        </div>
+        
+        <ng-template pTemplate="footer">
+            <div class="text-center text-500 text-sm">
+                Proyecto IoT &copy; 2025
+            </div>
+        </ng-template>
+    </p-card>
+</div>
