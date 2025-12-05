@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api';
@@ -16,13 +16,19 @@ import { ButtonModule } from 'primeng/button';
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   datos: any[] = [];
   chartData: any;
   chartOptions: any;
   usuarioLogueado: string | null = '';
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
+  private destroyed = false;
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     // 1. Verificar sesión
@@ -57,7 +63,14 @@ export class DashboardComponent implements OnInit {
     this.cargarDatos();
     
     // 4. Actualizar automáticamente cada 10 segundos
-    setInterval(() => this.cargarDatos(), 10000);
+    this.refreshTimer = setInterval(() => this.cargarDatos(), 10000);
+  }
+
+  ngOnDestroy() {
+    this.destroyed = true;
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+    }
   }
 
   cargarDatos() {
@@ -70,34 +83,36 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-initChart() {
+  initChart() {
     const ultimos = this.datos.slice(0, 10).reverse();
-    
-    // CORRECCIÓN: setTimeout mueve la actualización al siguiente ciclo de Javascript
-    // Esto elimina el error NG0100 instantáneamente.
+
     setTimeout(() => {
-        this.chartData = {
-          labels: ultimos.map(d => {
-            const fecha = new Date(d.timestamp_utc);
-            return fecha.toLocaleTimeString('es-MX');
-          }),
-          datasets: [
-            {
-              label: 'Temperatura (°C)',
-              data: ultimos.map(d => d.temp),
-              fill: false,
-              borderColor: '#FFA726',
-              tension: 0.4
-            },
-            {
-              label: 'Humedad (%)',
-              data: ultimos.map(d => d.hum),
-              fill: false,
-              borderColor: '#42A5F5',
-              tension: 0.4
-            }
-          ]
-        };
+      this.chartData = {
+        labels: ultimos.map(d => {
+          const fecha = new Date(d.timestamp_utc);
+          return fecha.toLocaleTimeString('es-MX');
+        }),
+        datasets: [
+          {
+            label: 'Temperatura (°C)',
+            data: ultimos.map(d => d.temp),
+            fill: false,
+            borderColor: '#FFA726',
+            tension: 0.4
+          },
+          {
+            label: 'Humedad (%)',
+            data: ultimos.map(d => d.hum),
+            fill: false,
+            borderColor: '#42A5F5',
+            tension: 0.4
+          }
+        ]
+      };
+
+      if (!this.destroyed) {
+        this.cdr.detectChanges();
+      }
     }, 0);
   }
 
