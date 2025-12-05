@@ -69,12 +69,13 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  actualizarGrafica() {
+actualizarGrafica() {
+    // Tomamos los últimos 10 registros y los invertimos
     const ultimos = this.datos.slice(0, 10).reverse();
     
     this.chartData = {
       labels: ultimos.map(d => {
-        // CORREGIDO: Usamos timestamp_utc
+        // CORREGIDO: Convertimos el timestamp UTC a hora local legible
         return new Date(d.timestamp_utc).toLocaleTimeString('es-MX'); 
       }),
       datasets: [
