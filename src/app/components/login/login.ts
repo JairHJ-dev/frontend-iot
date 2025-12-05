@@ -11,12 +11,12 @@ import { PasswordModule } from 'primeng/password';
 
 @Component({
   selector: 'app-login',
-  standalone: true, // ¡Importante!
+  standalone: true, 
   imports: [CommonModule, FormsModule, CardModule, ButtonModule, InputTextModule, PasswordModule],
-  templateUrl: './login.html', // Tu archivo se llama login.html
-  styleUrls: ['./login.css']   // Tu archivo se llama login.css
+  templateUrl: './login.html', 
+  styleUrls: ['./login.css']   
 })
-export class LoginComponent { // El nombre de la clase puede que sea 'Login' por defecto, cámbialo a LoginComponent si quieres o déjalo como Login
+export class LoginComponent { 
   usuario = '';
   password = '';
   error = '';
@@ -24,7 +24,7 @@ export class LoginComponent { // El nombre de la clase puede que sea 'Login' por
   constructor(private router: Router) {}
 
   login() {
-    // Usuarios Hardcoded (Requisito)
+
     if ((this.usuario === 'admin' && this.password === 'admin123') || 
         (this.usuario === 'profesor' && this.password === 'uteq')) {
       
