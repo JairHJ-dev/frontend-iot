@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ApiService } from '../../services/api'; // Asegúrate que la ruta sea correcta
+import { ApiService } from '../../services/api';
 
 // PrimeNG Imports
 import { CardModule } from 'primeng/card';
@@ -14,7 +14,7 @@ import { ButtonModule } from 'primeng/button';
   standalone: true,
   imports: [CommonModule, CardModule, TableModule, ChartModule, ButtonModule],
   templateUrl: './dashboard.html',
-  styleUrls: ['./dashboard.css'] // Si tienes dashboard.css vacío, no pasa nada
+  styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit {
   datos: any[] = [];
@@ -32,15 +32,10 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    // 2. Cargar datos iniciales
-    this.cargarDatos();
-    
-    // 3. Actualizar automáticamente cada 10 segundos
-    setInterval(() => this.cargarDatos(), 10000);
-
-    // Configuración visual de la gráfica
+    // 2. Configuración de la gráfica
     this.chartOptions = {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: {
                 labels: { color: '#495057' }
@@ -57,44 +52,53 @@ export class DashboardComponent implements OnInit {
             }
         }
     };
+
+    // 3. Cargar datos iniciales
+    this.cargarDatos();
+    
+    // 4. Actualizar automáticamente cada 10 segundos
+    setInterval(() => this.cargarDatos(), 10000);
   }
 
   cargarDatos() {
     this.api.getDatos().subscribe({
       next: (response) => {
         this.datos = response;
-        this.actualizarGrafica();
+        this.initChart();
       },
       error: (err) => console.error('Error conectando al backend:', err)
     });
   }
 
-actualizarGrafica() {
-    // Tomamos los últimos 10 registros y los invertimos
+initChart() {
     const ultimos = this.datos.slice(0, 10).reverse();
     
-    this.chartData = {
-      labels: ultimos.map(d => {
-        // CORREGIDO: Convertimos el timestamp UTC a hora local legible
-        return new Date(d.timestamp_utc).toLocaleTimeString('es-MX'); 
-      }),
-      datasets: [
-        {
-          label: 'Temperatura (°C)',
-          data: ultimos.map(d => d.temp),
-          fill: false,
-          borderColor: '#FFA726',
-          tension: 0.4
-        },
-        {
-          label: 'Humedad (%)',
-          data: ultimos.map(d => d.hum),
-          fill: false,
-          borderColor: '#42A5F5',
-          tension: 0.4
-        }
-      ]
-    };
+    // CORRECCIÓN: setTimeout mueve la actualización al siguiente ciclo de Javascript
+    // Esto elimina el error NG0100 instantáneamente.
+    setTimeout(() => {
+        this.chartData = {
+          labels: ultimos.map(d => {
+            const fecha = new Date(d.timestamp_utc);
+            return fecha.toLocaleTimeString('es-MX');
+          }),
+          datasets: [
+            {
+              label: 'Temperatura (°C)',
+              data: ultimos.map(d => d.temp),
+              fill: false,
+              borderColor: '#FFA726',
+              tension: 0.4
+            },
+            {
+              label: 'Humedad (%)',
+              data: ultimos.map(d => d.hum),
+              fill: false,
+              borderColor: '#42A5F5',
+              tension: 0.4
+            }
+          ]
+        };
+    }, 0);
   }
 
   logout() {
